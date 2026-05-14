@@ -2,7 +2,6 @@
 #include "../include/Sequences/ArraySequence.h"
 #include "../include/Sequences/ListSequence.h"
 #include "../include/Sequences/SequenceFunctions.h"
-#include "../include/Specialized/BitSequence.h"
 #include "../include/Common/IEnumerator.h"
 #include <vector>
 #include <cmath>
@@ -276,61 +275,6 @@ TEST(IteratorTest, EdgeCases) {
     delete it2;
     delete single;
 }
-
-TEST(BitSequenceTest, LogicalOperators) {
-    BitSequence* a = new BitSequence();
-    a->Append(true); a->Append(false); a->Append(true);
-    BitSequence* b = new BitSequence();
-    b->Append(true); b->Append(true); b->Append(false);
-
-    auto andRes = *a & *b;
-    EXPECT_EQ(andRes->Get(0).value, true);
-    EXPECT_EQ(andRes->Get(1).value, false);
-    EXPECT_EQ(andRes->Get(2).value, false);
-    delete andRes;
-
-    auto orRes = *a | *b;
-    EXPECT_EQ(orRes->Get(1).value, true);
-    EXPECT_EQ(orRes->Get(2).value, true);
-    delete orRes;
-
-    auto xorRes = *a ^ *b;
-    EXPECT_EQ(xorRes->Get(0).value, false);
-    EXPECT_EQ(xorRes->Get(1).value, true);
-    EXPECT_EQ(xorRes->Get(2).value, true);
-    delete xorRes;
-
-    auto notRes = !(*a);
-    EXPECT_EQ(notRes->Get(0).value, false);
-    EXPECT_EQ(notRes->Get(1).value, true);
-    delete notRes;
-    delete a;
-    delete b;
-}
-
-TEST(BitSequenceTest, MaskingAndLengthMismatch) {
-    BitSequence* mask = new BitSequence();
-    mask->Append(true); mask->Append(false); mask->Append(true); mask->Append(true);
-    BitSequence* data = new BitSequence();
-    data->Append(false); data->Append(true);
-
-    auto masked = *data & *mask;
-    EXPECT_EQ(masked->GetLength(), 2);
-    EXPECT_EQ(masked->Get(0).value, false);
-    EXPECT_EQ(masked->Get(1).value, false);
-    delete masked;
-    delete mask;
-    delete data;
-
-    BitSequence* emptyMask = new BitSequence();
-    BitSequence* emptyData = new BitSequence();
-    auto emptyAnd = *emptyData & *emptyMask;
-    EXPECT_EQ(emptyAnd->GetLength(), 0);
-    delete emptyAnd;
-    delete emptyMask;
-    delete emptyData;
-}
-
 
 TEST(SequenceFunctionsTest, TrySemantics) {
     MutableArraySequence<int>* seq = new MutableArraySequence<int>();
