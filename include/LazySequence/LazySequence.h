@@ -163,7 +163,15 @@ public:
 
     Sequence<T> *RemoveAt(int index) override {
         auto *left = this->GetSubsequence(0, index - 1);
-        auto *right = this->GetSubsequence(index + 1, this->GetLength() - 1);
+
+        Sequence<T> *right;
+        if (this->cardinalLength.isInfinite) {
+            right = new LazySequence<T>(new SubGen<T>(const_cast<LazySequence *>(this), index + 1, -1),
+                                        Cardinal::Infinity());
+        } else {
+            right = this->GetSubsequence(index + 1, this->GetLength() - 1);
+        }
+
         auto *result = left->Concat(right);
         delete left;
         delete right;

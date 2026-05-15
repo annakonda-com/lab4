@@ -78,7 +78,10 @@ public:
     SubGen(Sequence<T>* s, int st, int c) : src(s->Clone()), start(st), count(c) {}
     ~SubGen() override { delete src; }
     T GetNext() override { return src->Get(start + current++); }
-    bool HasNext() const override { return current < count; }
+    bool HasNext() const override {
+        if (count == -1) return true;
+        return current < count;
+    }
     Generator<T>* Clone() const override { return new SubGen<T>(src, start, count); }
 };
 
@@ -216,4 +219,77 @@ public:
         return hasNextVal;
     }
     Generator<TOut>* Clone() const override { return new SecondProjectionGenerator<TPair, TOut>(src_orig); }
+};
+
+template <typename T>
+struct Event {
+    double calculatedTime;
+    std::vector<std::optional<T>> values;
+};
+
+template <typename T>
+class SyncEventGenerator : public Generator<Event<T>> {
+private:
+    struct EnumeratorState {
+        IEnumerator<Pair<double, T>>* it;
+        bool hasData;
+    };
+
+    std::vector<EnumeratorState> states;
+    double tau;
+    int n;
+
+public:
+    SyncEventGenerator(std::vector<Sequence<Pair<double, T>>*> sources, double tau)
+        : tau(tau), n(sources.size()) {
+        for (auto src : sources) {
+            auto* it = src->GetEnumerator();
+            bool hasFirst = it->MoveNext();
+            states.push_back({it, hasFirst});
+        }
+    }
+
+    ~SyncEventGenerator() override {
+        for (auto& s : states) delete s.it;
+    }
+
+    bool HasNext() const override {
+        for (const auto& s : states) {
+            if (s.hasData) return true;
+        }
+        return false;
+    }
+
+    Event<T> GetNext() override {
+        double t_min = -1;
+        for (const auto& s : states) {
+            if (s.hasData) {
+                double t_curr = s.it->GetCurrent().first;
+                if (t_min < 0 || t_curr < t_min) t_min = t_curr;
+            }
+        }
+
+        Event<T> event;
+        event.values.resize(n, std::nullopt);
+        double sumT = 0;
+        int count = 0;
+
+        for (int i = 0; i < n; ++i) {
+            if (states[i].hasData) {
+                double t_i = states[i].it->GetCurrent().first;
+                if (t_i <= t_min + tau) {
+                    event.values[i] = states[i].it->GetCurrent().second;
+                    sumT += t_i;
+                    count++;
+                    states[i].hasData = states[i].it->MoveNext();
+                }
+            }
+        }
+        event.calculatedTime = (count > 0) ? (sumT / count - tau / 2.0) : 0;
+        return event;
+    }
+
+    Generator<Event<T>>* Clone() const override {
+        return nullptr;
+    }
 };

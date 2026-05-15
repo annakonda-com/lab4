@@ -51,7 +51,7 @@ TEST(LazySequenceTest, InfiniteFibonacci) {
     auto* init = new MutableArraySequence<int>();
     LazySequence<int> fib(fibRule, init);
 
-    EXPECT_EQ(fib.GetLength(), -1); // Infinity
+    EXPECT_EQ(fib.GetLength(), -1);
     EXPECT_EQ(fib.Get(0), 0);
     EXPECT_EQ(fib.Get(1), 1);
     EXPECT_EQ(fib.Get(2), 1);
@@ -177,4 +177,40 @@ TEST(LazySequenceTest, CloneState) {
     EXPECT_EQ(copy->Get(2), 9);
 
     delete copy;
+}
+
+
+TEST(SyncGeneratorTest, AccuracyCheck) {
+    double tau = 10.0;
+    auto* s1 = new MutableArraySequence<Pair<double, int>>();
+    auto* s2 = new MutableArraySequence<Pair<double, int>>();
+
+    s1->Append({102.0, 10});
+    s2->Append({108.0, 20});
+
+    std::vector<Sequence<Pair<double, int>>*> sources = {s1, s2};
+    SyncEventGenerator<int> gen(sources, tau);
+
+    ASSERT_TRUE(gen.HasNext());
+    Event<int> e = gen.GetNext();
+    EXPECT_DOUBLE_EQ(e.calculatedTime, 100.0);
+    EXPECT_EQ(e.values[0].value(), 10);
+    EXPECT_EQ(e.values[1].value(), 20);
+
+    delete s1; delete s2;
+}
+
+TEST(SyncGeneratorTest, MissingDataHandle) {
+    double tau = 5.0;
+    auto* s1 = new MutableArraySequence<Pair<double, int>>();
+    auto* s2 = new MutableArraySequence<Pair<double, int>>();
+
+    s1->Append({10.0, 1});
+    s2->Append({20.0, 2});
+
+    std::vector<Sequence<Pair<double, int>>*> sources = {s1, s2};
+    SyncEventGenerator<int> gen(sources, tau);
+
+    Event<int> e1 = gen.GetNext();
+    EXPECT_EQ(e1.values[1], std::nullopt);
 }

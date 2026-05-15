@@ -29,6 +29,7 @@ add_executable(lab4 src/main.cpp
         include/Stream/Specialized/IndexBuilder.h
         include/Stream/Specialized/FileReadOnlyStream.h
         include/Stream/Specialized/SequenceReadOnlyStream.h
+        include/LazySequence/TuringMachine.h
 )
 
 include_directories(third_party/googletest/include)
@@ -39,6 +40,7 @@ add_executable(tests
         tests/test_sequence.cpp
         tests/test_lazy_sequence.cpp
         tests/test_streams.cpp
+        tests/test_turing_machine.cpp
 )
 
 target_include_directories(tests PRIVATE ${CMAKE_SOURCE_DIR}/include)
