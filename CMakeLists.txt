@@ -21,11 +21,14 @@ add_executable(lab4 src/main.cpp
         include/Sequences/Algorithms.h
         include/Sequences/SequenceEnumerator.h
         include/LazySequence/LazySequence.h
-        include/Stream/RWStreams.h
-        include/Stream/BufferReadOnlyStream.h
-        include/Stream/FilteredGenerator.h
         include/LazySequence/Cardinal.h
         include/LazySequence/Generators.h
+        include/Stream/ReadOnlyStream.h
+        include/Stream/WriteOnlyStream.h
+        include/Base/BinarySearchTree.h
+        include/Stream/Specialized/IndexBuilder.h
+        include/Stream/Specialized/FileReadOnlyStream.h
+        include/Stream/Specialized/SequenceReadOnlyStream.h
 )
 
 include_directories(third_party/googletest/include)
@@ -35,6 +38,7 @@ add_executable(tests
         tests/test_linked_list.cpp
         tests/test_sequence.cpp
         tests/test_lazy_sequence.cpp
+        tests/test_streams.cpp
 )
 
 target_include_directories(tests PRIVATE ${CMAKE_SOURCE_DIR}/include)
