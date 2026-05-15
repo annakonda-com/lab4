@@ -102,7 +102,7 @@ TEST(AlphabeticalIndexTest, NormalizationTest) {
 
 
 TEST(AlphabeticalIndexTest, RealBookPerformanceTest) {
-    std::string filePath = "C:\\Anna\\informatik\\lab4\\tests\\data\\warandpeace.txt";
+    std::string filePath = "..\\tests\\data\\warandpeace.txt";
 
     std::ifstream checkFile(filePath);
     if (!checkFile.is_open()) {
@@ -119,13 +119,9 @@ TEST(AlphabeticalIndexTest, RealBookPerformanceTest) {
 
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> diff = end - start;
-
     std::cout << "Книга обработана за: " << diff.count() << " секунд." << std::endl;
     std::cout << "Всего слов в потоке: " << fileStream.GetPosition() << std::endl;
 
-
-    // Вместо поиска в огромной строке вывода, спрашиваем у дерева напрямую
-    // Важно: если в файле "Пьер", в дереве он уже "пьер" (после CleanWord)
     EXPECT_TRUE(index.Contains("Пьер")) << "Слово 'пьер' не найдено в индексе!";
     EXPECT_TRUE(index.Contains("Андрей")) << "Слово 'андрей' не найдено в индексе!";
 }
